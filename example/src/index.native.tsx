@@ -15,7 +15,8 @@ import {
   Theme,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { createDrawerNavigator } from 'react-navigation';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationNativeContainer } from '@react-navigation/native';
 import RootNavigator from './RootNavigator';
 import DrawerItems from './DrawerItems';
 
@@ -33,28 +34,24 @@ const KeepAwake = () => {
   return null;
 };
 
-const App = createDrawerNavigator(
-  { Home: { screen: RootNavigator } },
-  {
-    contentComponent: () => (
-      <PreferencesContext.Consumer>
-        {preferences => (
-          <DrawerItems
-            toggleTheme={preferences.theme}
-            toggleRTL={preferences.rtl}
-            isRTL={preferences.isRTL}
-            isDarkTheme={preferences.isDarkTheme}
-          />
-        )}
-      </PreferencesContext.Consumer>
-    ),
-    // set drawerPosition to support rtl toggle on android
-    drawerPosition:
-      Platform.OS === 'android' && I18nManager.isRTL ? 'right' : 'left',
-  }
-);
+const DrawerContent = () => {
+  return (
+    <PreferencesContext.Consumer>
+      {preferences => (
+        <DrawerItems
+          toggleTheme={preferences.theme}
+          toggleRTL={preferences.rtl}
+          isRTL={preferences.isRTL}
+          isDarkTheme={preferences.isDarkTheme}
+        />
+      )}
+    </PreferencesContext.Consumer>
+  );
+};
 
-export default class PaperExample extends React.Component<{}, State> {
+const Drawer = createDrawerNavigator<{ Home: undefined }>();
+
+export default class App extends React.Component<{}, State> {
   state = {
     theme: DefaultTheme,
     rtl: I18nManager.isRTL,
@@ -131,13 +128,11 @@ export default class PaperExample extends React.Component<{}, State> {
             isDarkTheme: this.state.theme === DarkTheme,
           }}
         >
-          <App
-            persistenceKey={
-              process.env.NODE_ENV !== 'production'
-                ? 'NavigationStateDEV'
-                : null
-            }
-          />
+          <NavigationNativeContainer>
+            <Drawer.Navigator>
+              <Drawer.Screen name="Home" component={RootNavigator} />
+            </Drawer.Navigator>
+          </NavigationNativeContainer>
         </PreferencesContext.Provider>
         <KeepAwake />
       </PaperProvider>
